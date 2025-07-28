@@ -45,7 +45,27 @@ tipo_cambio_service/
    ```
 
 4. Configura tus variables de entorno en el archivo `.env`.
+   ## Configuración del archivo `.env`
 
+   Debes crear un archivo `.env` en la raíz del proyecto con el siguiente contenido y tus propios valores:
+   
+   ```env
+   DATABASE_URL=sqlite:///./tipo_cambio.db      # Ruta de la base de datos SQLite
+   API_KEY=your_api_key                         # Clave de API para proteger los endpoints
+   
+   BCCR_INDICADOR_COMPRA=317                    # Código indicador BCCR para tipo de cambio de compra
+   BCCR_INDICADOR_VENTA=318                     # Código indicador BCCR para tipo de cambio de venta
+   
+   BCCR_NOMBRE=tuNombre                         # Nombre registrado en el BCCR
+   BCCR_SUBNIVELES=N                            # Parámetro requerido por el BCCR (usualmente "N")
+   BCCR_CORREO=tucorreo                         # Correo electrónico registrado en el BCCR
+   BCCR_TOKEN=tockenbccr                        # Token de acceso al webservice del BCCR
+   ```
+   
+   **Notas:**
+   - El token (`BCCR_TOKEN`) se obtiene registrándote en:  
+     [https://www.bccr.fi.cr/indicadores-economicos/servicio-web](https://www.bccr.fi.cr/indicadores-economicos/servicio-web)
+   - No compartas tu archivo `.env` con datos reales
 5. Ejecuta la aplicación localmente:
    ```
    uvicorn main:app --reload
