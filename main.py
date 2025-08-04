@@ -11,9 +11,10 @@ init_db()
 API_KEY = os.getenv("API_KEY")
 
 class ConversionRequest(BaseModel):
-    monto_colones: float
+    monto: float
     fecha: str
     tipo: str  # "compra" o "venta"
+    sentido: str  # "crc_usd" o "usd_crc"
 
 def get_db():
     db = SessionLocal()
@@ -32,9 +33,10 @@ async def convertir(
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="API key inválida")
 
-    monto_colones = datos.monto_colones
+    monto = datos.monto
     fecha = datos.fecha
     tipo = datos.tipo
+    sentido = datos.sentido
 
     # Buscar en la base de datos primero
     tipo_cambio = db.query(TipoCambio).filter_by(fecha=fecha, tipo=tipo).first()
@@ -43,7 +45,15 @@ async def convertir(
         tipo_cambio = TipoCambio(fecha=fecha, tipo=tipo, valor=valor)
         db.add(tipo_cambio)
         db.commit()
-    monto_usd = monto_colones / tipo_cambio.valor
+
+    if sentido == "crc_usd":
+        monto_colones = monto
+        monto_usd = monto_colones / tipo_cambio.valor
+    elif sentido == "usd_crc":
+        monto_usd = monto
+        monto_colones = monto_usd * tipo_cambio.valor
+    else:
+        raise HTTPException(status_code=400, detail="Sentido inválido. Use 'crc_usd' o 'usd_crc'.")
 
     log = ConsultaLog(
         fecha=datetime.now(),
@@ -61,6 +71,7 @@ async def convertir(
         "fecha": fecha,
         "tipo": tipo,
         "tipo_cambio": tipo_cambio.valor,
+        "sentido": sentido,
         "monto_colones": monto_colones,
         "monto_usd": monto_usd
     }
